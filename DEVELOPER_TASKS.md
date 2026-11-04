@@ -2,7 +2,59 @@
 
 **Project Duration:** 8 weeks (November 4 - December 27, 2026)  
 **Team Size:** 4 developers  
-**Last Updated:** November 4, 2026
+**Last Updated:** November 4, 2026  
+**Tech Stack:** Latest 2026 frameworks and libraries
+
+---
+
+## 2026 Technology Stack (Latest Versions)
+
+### Frontend
+- **Framework:** Next.js 15.1.0 (React 19, App Router, Server Actions)
+- **UI Library:** Shadcn/ui (Radix UI primitives)
+- **Styling:** Tailwind CSS 4.0 (CSS-first configuration)
+- **State Management:** Zustand 5.0 (with React 19 hooks)
+- **Data Grids:** AG Grid 32.3.0 (2026 latest)
+- **Charts:** Chart.js 4.5.0 with react-chartjs-2 6.0
+- **Timeline:** Bryntum Scheduler 6.1 (2026 version)
+- **Forms:** React Hook Form 7.53 + Zod 3.24
+- **HTTP Client:** TanStack Query 5.60 (React Query) + Axios 1.8
+- **WebSocket:** Socket.io Client 4.8
+- **Date/Time:** date-fns 4.1 or Day.js 1.11.13
+
+### Backend
+- **Runtime:** Node.js 22.11 LTS (latest 2026)
+- **Framework:** Fastify 5.1.0 (fastest Node.js framework)
+- **TypeScript:** 5.7.0 (latest 2026)
+- **Validation:** Zod 3.24 (type-safe schemas)
+- **ORM:** Drizzle ORM 0.38 (latest, fastest TypeScript ORM 2026)
+- **Authentication:** Lucia 4.0 (modern auth library)
+- **WebSocket:** Socket.io 4.8
+- **Testing:** Vitest 2.1 (faster than Jest)
+- **API Docs:** Scalar 2.0 (modern OpenAPI docs)
+
+### AI/ML
+- **Python:** 3.12.7 (latest stable 2026)
+- **ML Framework:** XGBoost 2.1.2 (2026 latest)
+- **Deep Learning:** TensorFlow 2.18 / PyTorch 2.5
+- **Feature Engineering:** Polars 1.15 (faster than pandas for 2026)
+- **Model Serving:** FastAPI 0.115 (async Python web framework)
+- **Inference:** ONNX Runtime 1.20 + TensorFlow.js 4.23
+- **Explainability:** SHAP 0.46
+
+### Infrastructure & Database
+- **Database:** PostgreSQL 17 (released 2026)
+- **Cache:** Redis 7.4 (2026 latest)
+- **Search:** Elastic 8.16 (2026 latest)
+- **Container:** Docker 27.3 / Podman 5.3
+- **Deployment:** Render (2026 platform)
+- **Monitoring:** OpenTelemetry 1.31 + Elastic APM
+
+### DevOps & Testing
+- **CI/CD:** GitHub Actions (2026 features)
+- **Load Testing:** k6 0.54 or Grafana k6 Cloud
+- **E2E Testing:** Playwright 1.49 (latest 2026)
+- **API Testing:** Hoppscotch 24.11 or Bruno 1.33
 
 ---
 
@@ -18,7 +70,7 @@
 **Primary Focus:** Model training, feature engineering, inference optimization
 
 ### Developer 4: Full-Stack (Integration & DevOps)
-**Primary Focus:** Infrastructure, database, CI/CD, end-to-end integration
+**Primary Focus:** Infrastructure, database, CI/CD, frontend-backend integration
 
 ---
 
@@ -62,41 +114,125 @@
 - [ ] Document database schema with ER diagram
 
 ### Developer 2: Frontend Lead
-**Days 1-3: Frontend Project Setup**
-- [ ] Initialize Next.js 14 project (App Router)
-- [ ] Configure TypeScript, Tailwind CSS, shadcn/ui
-- [ ] Install dependencies:
-  - AG Grid Community/Enterprise
-  - Chart.js with react-chartjs-2
-  - Zustand for state management
-  - WebSocket client
+**Days 1-3: Frontend Project Setup (Next.js 15.1 + React 19)**
+- [ ] Initialize Next.js 15.1.0 project with latest features:
+  ```bash
+  npx create-next-app@15.1.0 payguard-frontend --typescript --tailwind --app
+  cd payguard-frontend
+  ```
+- [ ] Install core dependencies (November 2026 versions):
+  ```bash
+  # UI & Styling
+  npm install @radix-ui/themes@3.1.4 tailwindcss@4.0.0
+  npm install -D @tailwindcss/typography @tailwindcss/forms
+  
+  # State & Data Fetching
+  npm install zustand@5.0.0 @tanstack/react-query@5.60.0 axios@1.8.0
+  
+  # Forms & Validation
+  npm install react-hook-form@7.53.0 zod@3.24.0 @hookform/resolvers@3.9.1
+  
+  # Data Visualization
+  npm install ag-grid-react@32.3.0 ag-grid-community@32.3.0
+  npm install chart.js@4.5.0 react-chartjs-2@6.0.0
+  npm install @bryntum/scheduler@6.1.0 @bryntum/scheduler-react@6.1.0
+  
+  # Real-time
+  npm install socket.io-client@4.8.0
+  
+  # Utilities
+  npm install date-fns@4.1.0 clsx@2.1.1 tailwind-merge@2.6.0
+  ```
+- [ ] Configure Tailwind CSS 4.0 (CSS-first config):
+  ```css
+  /* app/globals.css */
+  @import "tailwindcss";
+  @theme {
+    --color-primary: oklch(0.5 0.2 250);
+    --radius-md: 0.5rem;
+  }
+  ```
 - [ ] Set up project structure:
   ```
   frontend/
   ├── app/
-  │   ├── dashboard/
-  │   ├── transactions/
-  │   ├── settings/
-  │   └── layout.tsx
+  │   ├── (auth)/
+  │   │   ├── login/
+  │   │   └── register/
+  │   ├── (dashboard)/
+  │   │   ├── layout.tsx
+  │   │   ├── page.tsx
+  │   │   ├── transactions/
+  │   │   ├── analytics/
+  │   │   └── settings/
+  │   ├── api/          # API routes for tRPC
+  │   ├── layout.tsx
+  │   └── globals.css
   ├── components/
+  │   ├── ui/          # shadcn/ui components
+  │   ├── charts/
+  │   ├── tables/
+  │   └── forms/
   ├── lib/
-  └── package.json
+  │   ├── api.ts       # Axios instance
+  │   ├── socket.ts    # Socket.io client
+  │   └── utils.ts
+  ├── hooks/
+  ├── stores/          # Zustand stores
+  └── types/
   ```
+- [ ] Configure TypeScript 5.7 strict mode
+- [ ] Set up ESLint 9.0 + Prettier 3.3
 
-**Days 4-5: Design System**
-- [ ] Create design tokens (colors, typography, spacing)
-- [ ] Build reusable UI components:
-  - Button, Input, Card, Badge
-  - Modal, Dropdown, Alert
-  - Loading spinner, Empty states
-- [ ] Create responsive layout components
-- [ ] Document component library
+**Days 4-5: Design System & shadcn/ui**
+- [ ] Initialize shadcn/ui (Radix UI primitives):
+  ```bash
+  npx shadcn@latest init
+  npx shadcn@latest add button card input label badge
+  npx shadcn@latest add dropdown-menu dialog alert select
+  npx shadcn@latest add table tabs toast form
+  ```
+- [ ] Create design tokens:
+  ```typescript
+  // lib/design-tokens.ts
+  export const tokens = {
+    colors: {
+      risk: {
+        green: 'oklch(0.7 0.15 140)',
+        yellow: 'oklch(0.8 0.15 80)',
+        red: 'oklch(0.6 0.2 25)'
+      }
+    },
+    spacing: { /* ... */ },
+    typography: { /* ... */ }
+  }
+  ```
+- [ ] Build custom components:
+  - RiskScoreBadge (color-coded by category)
+  - LoadingSpinner (with React 19 Suspense)
+  - EmptyState (with illustrations)
+  - StatCard (for dashboard metrics)
+- [ ] Create responsive layout components using CSS Grid/Flexbox
+- [ ] Document component library in Storybook 8.4 (optional)
 
 **Days 6-7: Authentication UI**
-- [ ] Build login page
-- [ ] Build signup/registration flow
+- [ ] Build login page with React Hook Form + Zod:
+  ```typescript
+  // app/(auth)/login/page.tsx
+  const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8)
+  })
+  ```
+- [ ] Build registration flow (multi-step with React 19 useOptimistic)
 - [ ] Create password reset flow
-- [ ] Build merchant onboarding wizard (multi-step form)
+- [ ] Build merchant onboarding wizard:
+  - Step 1: Business information
+  - Step 2: Industry category
+  - Step 3: API key generation
+  - Step 4: Integration instructions
+- [ ] Implement form validation with real-time feedback
+- [ ] Add loading states with React 19 useTransition
 
 ### Developer 3: ML Engineer
 **Days 1-3: ML Environment Setup**
