@@ -1,0 +1,60 @@
+# Docker Compose for PayGuard AI
+# Runs API, MLflow, and Prometheus monitoring
+
+version: '3.8'
+
+services:
+  # Fraud Detection API
+  api:
+    build: .
+    container_name: payguard-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - MODEL_PATH=models/production
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - payguard-network
+
+  # MLflow Tracking Server (Optional)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    container_name: payguard-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow-data:/mlflow
+    command: mlflow server --host 0.0.0.0 --port 5000
+    networks:
+      - payguard-network
+
+  # Prometheus (Optional - for metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: payguard-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - payguard-network
+
+networks:
+  payguard-network:
+    driver: bridge
+
+volumes:
+  mlflow-data:
+  prometheus-data:
