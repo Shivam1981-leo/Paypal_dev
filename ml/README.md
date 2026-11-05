@@ -1,6 +1,6 @@
 # PayGuard AI - ML Service
 
-Fraud detection engine powered by XGBoost 2.1.2 and modern ML stack (November 2026).
+Fraud detection engine powered by XGBoost 2.1.2 trained on real-world Vesta e-commerce transaction data (November 2026).
 
 ## 🚀 Tech Stack
 
@@ -10,7 +10,7 @@ Fraud detection engine powered by XGBoost 2.1.2 and modern ML stack (November 20
 - **API Framework**: FastAPI 0.115.0
 - **Explainability**: SHAP 0.46.0
 - **Inference**: ONNX Runtime 1.20.0
-- **Deep Learning**: TensorFlow 2.18.0
+- **Dataset**: IEEE-CIS Fraud Detection (Vesta Corporation) - 590K real transactions
 
 ## 📁 Project Structure
 
@@ -61,20 +61,25 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-## 📊 Features
+## 📊 Dataset & Features
 
-The model uses 50+ engineered features across 10 categories:
+**Dataset**: IEEE-CIS Fraud Detection (Vesta Corporation)
+- **Size**: ~590,000 real e-commerce transactions
+- **Fraud Rate**: 3.5% (realistic production imbalance)
+- **Features**: 434 anonymized features including:
+  - Transaction amounts and product codes
+  - Card information (anonymized)
+  - Device and identity data
+  - Email domain analysis
+  - Time-based patterns
+  - Network and behavioral signals
 
-1. **Velocity Features** - Transaction frequency patterns
-2. **Amount Features** - Statistical amount analysis
-3. **Geographic Features** - Location mismatch detection
-4. **Device Features** - Device fingerprinting, VPN detection
-5. **Behavioral Features** - Session and browsing patterns
-6. **Account Features** - Account age, reputation scoring
-7. **Cart Features** - Shopping cart analysis
-8. **Temporal Features** - Time-based patterns
-9. **Merchant Features** - Merchant history and chargeback rates
-10. **Cross-Reference Features** - Network analysis
+**Feature Engineering**:
+- Transaction amount transformations (log, decimal analysis)
+- Temporal features (hour of day, day of week)
+- Device type extraction (Windows, iOS, Android, Mac)
+- Email domain matching
+- Missing value handling with signal preservation
 
 ## 🎯 Risk Categories
 
@@ -84,17 +89,38 @@ The model uses 50+ engineered features across 10 categories:
 
 ## 🚀 Quick Start
 
-### Generate Synthetic Data
+### 1. Setup Kaggle API
+
+Get your Kaggle API credentials:
+1. Go to https://www.kaggle.com/settings/account
+2. Click "Create New API Token"
+3. Save `kaggle.json` to `~/.kaggle/kaggle.json` (Linux/Mac) or `C:\Users\<username>\.kaggle\kaggle.json` (Windows)
+
+### 2. Download Vesta Dataset
 
 ```bash
-python scripts/generate_data.py
+# Accept competition rules first at: https://www.kaggle.com/c/ieee-fraud-detection/rules
+pip install kaggle
+python scripts/download_vesta_dataset.py
 ```
 
-### Train Model
+This downloads ~1.2 GB of real e-commerce fraud data.
+
+### 3. Preprocess Data
+
+```bash
+python scripts/preprocess_vesta_data.py
+```
+
+### 4. Train Model
 
 ```bash
 python scripts/train_model.py
 ```
+
+**GPU Acceleration**: The training script automatically detects and uses your NVIDIA GPU (RTX 5050) if available. Training time:
+- **GPU (RTX 5050)**: ~5-10 minutes
+- **CPU**: ~15-30 minutes
 
 ### Start Inference API
 

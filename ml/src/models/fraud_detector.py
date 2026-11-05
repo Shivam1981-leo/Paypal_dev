@@ -95,10 +95,16 @@ class FraudDetector:
             verbose=50
         )
 
-        # Get best iteration
-        best_iteration = self.model.best_iteration
-        print(f"\n✓ Training complete!")
-        print(f"Best iteration: {best_iteration}")
+        # Get best iteration (handle case where early stopping didn't trigger)
+        try:
+            best_iteration = self.model.best_iteration
+            print(f"\nOK: Training complete!")
+            print(f"Best iteration: {best_iteration}")
+        except AttributeError:
+            # Early stopping didn't trigger - model used all trees
+            best_iteration = self.model.n_estimators
+            print(f"\nOK: Training complete!")
+            print(f"Used all {best_iteration} trees (no early stopping)")
 
         # Evaluate on validation set
         print("\nEvaluating model...")
@@ -259,13 +265,25 @@ class FraudDetector:
         self.model.save_model(model_file)
         print(f"✓ Saved model to {model_file}")
 
-        # Save metadata
+        # Save metadata (convert numpy types to native Python types for JSON serialization)
+        def convert_to_native(obj):
+            """Convert numpy types to native Python types"""
+            if isinstance(obj, (np.integer, np.int32, np.int64)):
+                return int(obj)
+            elif isinstance(obj, (np.floating, np.float32, np.float64)):
+                return float(obj)
+            elif isinstance(obj, dict):
+                return {k: convert_to_native(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_to_native(item) for item in obj]
+            return obj
+
         metadata = {
             'version': version,
             'created_at': datetime.now().isoformat(),
             'feature_names': self.feature_names,
-            'threshold': self.threshold,
-            'metrics': self.metrics,
+            'threshold': float(self.threshold),
+            'metrics': convert_to_native(self.metrics),
             'n_features': len(self.feature_names)
         }
 

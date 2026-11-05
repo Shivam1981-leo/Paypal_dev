@@ -6,6 +6,9 @@ scikit-learn==1.6.0
 polars==1.15.0
 numpy==2.2.0
 
+# Kaggle API for dataset download
+kaggle==1.6.17
+
 # Deep Learning (Latest 2026)
 tensorflow==2.18.0
 # pytorch==2.5.0  # Uncomment if needed
@@ -22,7 +25,6 @@ uvicorn[standard]==0.32.0
 pydantic==2.10.0
 
 # Data Processing & Analysis
-faker==31.2.0
 scipy==1.14.0
 geopy==2.4.1
 
