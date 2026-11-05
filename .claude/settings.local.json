@@ -28,7 +28,15 @@
       "Bash(curl http://localhost:3001/health)",
       "Bash(curl -s -X POST http://localhost:3001/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"demo@payguard.ai\",\"password\":\"Demo123!\"}')",
       "Bash(curl -s http://localhost:3001/api/v1/auth/me -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjaGFudElkIjoiZmVkN2NlNmUtNmQ0YS00NTliLTg3YTEtYWNhNzgyMTk2NGZiIiwiZW1haWwiOiJkZW1vQHBheWd1YXJkLmFpIiwibmFtZSI6IkRlbW8gTWVyY2hhbnQiLCJhcGlLZXkiOiJwa19jN2U3NjdjNjRjOTQ1NzdkOTY0ZDljOTkxNTYwYmVlYzY5MDAxMzE2YTUwZTA5ZTciLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzkzNzc3NDUyLCJleHAiOjE3OTQzODIyNTJ9.fvFKOyeq8BjQ052GmdqLskwmr86W1Um6388W48qVCqQ')",
-      "Bash(curl -s http://localhost:3001/api/v1/merchants/statistics -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjaGFudElkIjoiZmVkN2NlNmUtNmQ0YS00NTliLTg3YTEtYWNhNzgyMTk2NGZiIiwiZW1haWwiOiJkZW1vQHBheWd1YXJkLmFpIiwibmFtZSI6IkRlbW8gTWVyY2hhbnQiLCJhcGlLZXkiOiJwa19jN2U3NjdjNjRjOTQ1NzdkOTY0ZDljOTkxNTYwYmVlYzY5MDAxMzE2YTUwZTA5ZTciLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzkzNzc3NDUyLCJleHAiOjE3OTQzODIyNTJ9.fvFKOyeq8BjQ052GmdqLskwmr86W1Um6388W48qVCqQ')"
+      "Bash(curl -s http://localhost:3001/api/v1/merchants/statistics -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjaGFudElkIjoiZmVkN2NlNmUtNmQ0YS00NTliLTg3YTEtYWNhNzgyMTk2NGZiIiwiZW1haWwiOiJkZW1vQHBheWd1YXJkLmFpIiwibmFtZSI6IkRlbW8gTWVyY2hhbnQiLCJhcGlLZXkiOiJwa19jN2U3NjdjNjRjOTQ1NzdkOTY0ZDljOTkxNTYwYmVlYzY5MDAxMzE2YTUwZTA5ZTciLCJpc0FjdGl2ZSI6dHJ1ZSwiaWF0IjoxNzkzNzc3NDUyLCJleHAiOjE3OTQzODIyNTJ9.fvFKOyeq8BjQ052GmdqLskwmr86W1Um6388W48qVCqQ')",
+      "Bash(cd C:\\\\\\\\Users\\\\\\\\valla\\\\\\\\VD-Projects\\\\\\\\Hackathons\\\\\\\\Paypal_dev\\\\\\\\ml_18sec_review)",
+      "Bash(python -m pytest tests/test_adapter.py -v)",
+      "Bash(pip install *)",
+      "Bash(python -c \"import xgboost as xgb; model = xgb.XGBClassifier\\(\\); model.load_model\\('models/production/model.json'\\); print\\(f'Features: {model.n_features_in_}'\\)\")",
+      "Bash(python -m pytest tests/test_adapter.py::test_adapter_initialization -v)",
+      "Bash(python -m pytest tests/test_integration.py -v -s)",
+      "Bash(python -m pytest tests/test_integration.py::test_end_to_end_prediction -v -s)",
+      "Bash(grep -E \"\\\\.\\(py|ts|js\\)$\")"
     ]
   }
 }
