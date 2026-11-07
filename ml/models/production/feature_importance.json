@@ -1,0 +1,202 @@
+[
+  {
+    "feature": "V70",
+    "importance": 0.11597408354282379
+  },
+  {
+    "feature": "product_is_w",
+    "importance": 0.06786643713712692
+  },
+  {
+    "feature": "V91",
+    "importance": 0.06647195667028427
+  },
+  {
+    "feature": "C4_count",
+    "importance": 0.042161159217357635
+  },
+  {
+    "feature": "C5_count",
+    "importance": 0.03775636851787567
+  },
+  {
+    "feature": "C8_count",
+    "importance": 0.03347853943705559
+  },
+  {
+    "feature": "card_is_debit",
+    "importance": 0.027418168261647224
+  },
+  {
+    "feature": "card_is_credit",
+    "importance": 0.02622857317328453
+  },
+  {
+    "feature": "V95",
+    "importance": 0.024863312020897865
+  },
+  {
+    "feature": "product_is_c",
+    "importance": 0.02421075664460659
+  },
+  {
+    "feature": "total_behavioral_counts",
+    "importance": 0.021834377199411392
+  },
+  {
+    "feature": "email_domains_match",
+    "importance": 0.020332245156168938
+  },
+  {
+    "feature": "shipping_address_frequency",
+    "importance": 0.013722443021833897
+  },
+  {
+    "feature": "V34",
+    "importance": 0.01157418079674244
+  },
+  {
+    "feature": "M4_encoded",
+    "importance": 0.011421775445342064
+  },
+  {
+    "feature": "card2_missing",
+    "importance": 0.010854750871658325
+  },
+  {
+    "feature": "V45",
+    "importance": 0.01006217859685421
+  },
+  {
+    "feature": "C1_count",
+    "importance": 0.010057645849883556
+  },
+  {
+    "feature": "D3",
+    "importance": 0.009832669980823994
+  },
+  {
+    "feature": "product_is_r",
+    "importance": 0.009500650689005852
+  },
+  {
+    "feature": "D2",
+    "importance": 0.00945991463959217
+  },
+  {
+    "feature": "V13",
+    "importance": 0.009433089755475521
+  },
+  {
+    "feature": "V62",
+    "importance": 0.009026704356074333
+  },
+  {
+    "feature": "product_is_h",
+    "importance": 0.008693471550941467
+  },
+  {
+    "feature": "V94",
+    "importance": 0.0086025046184659
+  },
+  {
+    "feature": "M5_encoded",
+    "importance": 0.008437186479568481
+  },
+  {
+    "feature": "V87",
+    "importance": 0.007779253181070089
+  },
+  {
+    "feature": "V69",
+    "importance": 0.007744889240711927
+  },
+  {
+    "feature": "V53",
+    "importance": 0.007469846401363611
+  },
+  {
+    "feature": "purchaser_email_missing",
+    "importance": 0.00711443368345499
+  },
+  {
+    "feature": "M6_encoded",
+    "importance": 0.006670344155281782
+  },
+  {
+    "feature": "device_risk_score",
+    "importance": 0.006240763235837221
+  },
+  {
+    "feature": "transaction_amount_log",
+    "importance": 0.00623168982565403
+  },
+  {
+    "feature": "C10_count",
+    "importance": 0.006207685451954603
+  },
+  {
+    "feature": "V56",
+    "importance": 0.006166672334074974
+  },
+  {
+    "feature": "D5",
+    "importance": 0.006040019448846579
+  },
+  {
+    "feature": "V12",
+    "importance": 0.005842871498316526
+  },
+  {
+    "feature": "C3_count",
+    "importance": 0.00568001251667738
+  },
+  {
+    "feature": "identity_fields_missing_count",
+    "importance": 0.005629011429846287
+  },
+  {
+    "feature": "D1",
+    "importance": 0.005626861471682787
+  },
+  {
+    "feature": "device_is_mobile",
+    "importance": 0.00559440441429615
+  },
+  {
+    "feature": "email_is_popular_domain",
+    "importance": 0.005573600064963102
+  },
+  {
+    "feature": "id_09_filled",
+    "importance": 0.005488311871886253
+  },
+  {
+    "feature": "C2_count",
+    "importance": 0.005464616697281599
+  },
+  {
+    "feature": "C9_count",
+    "importance": 0.0054440489038825035
+  },
+  {
+    "feature": "card_avg_amount",
+    "importance": 0.005333888344466686
+  },
+  {
+    "feature": "M3_encoded",
+    "importance": 0.005263614468276501
+  },
+  {
+    "feature": "overall_missing_data_score",
+    "importance": 0.005105151794850826
+  },
+  {
+    "feature": "D15",
+    "importance": 0.005104635376483202
+  },
+  {
+    "feature": "transaction_amount",
+    "importance": 0.005068427883088589
+  }
+]

@@ -222,7 +222,7 @@ def test_feature_consistency(engineer, sample_data):
     result2 = engineer.extract_all_features(sample_data)
 
     # Results should be identical
-    assert result1.frame_equal(result2)
+    assert result1.equals(result2)
 
 
 def test_no_nan_values(engineer, sample_data):

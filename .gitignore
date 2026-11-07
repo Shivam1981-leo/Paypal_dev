@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environment
+.env
+.env.local
+.env.*.local
+venv/
+env/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Downloaded installers and archives
+downloads/
+*.zip
+*.exe
+*.msi
+*.dmg
+
+# Services (Elasticsearch, Redis installations)
+services/
+
+# Data files
+ml/data/raw/
+ml/data/processed/
+*.csv
+*.parquet
+
+# Model training artifacts
+ml_18sec_review/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Documentation builds
+docs/_build/

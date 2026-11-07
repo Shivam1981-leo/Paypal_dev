@@ -1,8 +1,10 @@
 import axios, { AxiosInstance } from 'axios'
 
-const PAYPAL_API = process.env.PAYPAL_MODE === 'sandbox'
-  ? 'https://api-m.sandbox.paypal.com'
-  : 'https://api-m.paypal.com'
+function getPayPalApi(): string {
+  return process.env.PAYPAL_MODE === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com'
+}
 
 interface PayPalTokenResponse {
   access_token: string
@@ -23,8 +25,11 @@ class PayPalService {
 
   constructor() {
     this.client = axios.create({
-      baseURL: PAYPAL_API,
       timeout: 30000
+    })
+    this.client.interceptors.request.use((config) => {
+      config.baseURL = getPayPalApi()
+      return config
     })
   }
 
@@ -45,7 +50,7 @@ class PayPalService {
 
     try {
       const response = await axios.post<PayPalTokenResponse>(
-        `${PAYPAL_API}/v1/oauth2/token`,
+        `${getPayPalApi()}/v1/oauth2/token`,
         'grant_type=client_credentials',
         {
           headers: {

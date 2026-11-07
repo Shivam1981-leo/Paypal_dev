@@ -21,16 +21,21 @@ export async function verifyJWT(
   reply: FastifyReply
 ): Promise<void> {
   try {
-    const decoded = await request.jwtVerify()
+    const decoded = await request.jwtVerify<{ id?: string; merchantId?: string }>()
 
-    if (!decoded || typeof decoded !== 'object' || !decoded.merchantId) {
+    if (!decoded || typeof decoded !== 'object' || (!decoded.merchantId && !decoded.id)) {
       return reply.status(401).send({
         error: 'Invalid token'
       })
     }
 
-    // Attach merchant data to request
-    request.merchant = decoded as any
+    // Attach merchant data to request (guarantee both id and merchantId)
+    const payload = decoded as any
+    request.merchant = {
+      ...payload,
+      id: payload.id || payload.merchantId,
+      merchantId: payload.merchantId || payload.id
+    }
   } catch (error) {
     return reply.status(401).send({
       error: 'Authentication required'
@@ -62,7 +67,10 @@ export async function verifyApiKey(
   }
 
   // Attach merchant data to request
-  request.merchant = merchant as any
+  request.merchant = {
+    ...merchant,
+    merchantId: merchant.id
+  } as any
 }
 
 /**

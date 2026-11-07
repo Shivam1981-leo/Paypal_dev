@@ -1,7 +1,5 @@
+import 'dotenv/config'
 import { paypalService } from '../src/services/paypal.service.js'
-import * as dotenv from 'dotenv'
-
-dotenv.config()
 
 async function testPayPal() {
   console.log('🧪 Testing PayPal Integration...\n')

@@ -29,7 +29,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
 
   // API Keys
-  API_KEY_SALT: z.string().min(32)
+  API_KEY_SALT: z.string().min(32),
+
+  // ML Service
+  ML_SERVICE_URL: z.string().url().default('http://localhost:8000')
 })
 
 export type Env = z.infer<typeof envSchema>

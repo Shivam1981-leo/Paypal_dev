@@ -33,6 +33,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Generate JWT
       const token = fastify.jwt.sign({
+        id: merchant.id,
         merchantId: merchant.id,
         email: merchant.email,
         name: merchant.name,
@@ -65,6 +66,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Generate JWT
       const token = fastify.jwt.sign({
+        id: merchant.id,
         merchantId: merchant.id,
         email: merchant.email,
         name: merchant.name,

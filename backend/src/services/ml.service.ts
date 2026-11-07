@@ -94,9 +94,9 @@ export class MLService {
    * Predict fraud risk for a transaction
    */
   async predictRisk(request: MLRiskCheckRequest): Promise<MLRiskCheckResponse> {
-    // Check health if last check was > 5 minutes ago
-    const minutesSinceCheck = (Date.now() - this.lastHealthCheck.getTime()) / 60000
-    if (minutesSinceCheck > 5) {
+    // If not healthy or health check is stale (>30s), verify health
+    const isStale = (Date.now() - this.lastHealthCheck.getTime()) > 30000
+    if (!this.isHealthy || isStale) {
       await this.checkHealth()
     }
 

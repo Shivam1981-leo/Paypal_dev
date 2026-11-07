@@ -3,6 +3,15 @@
 High-performance REST API for real-time fraud risk scoring.
 """
 
+# Force UTF-8 encoding for Windows when run directly
+import sys
+import io
+if __name__ == '__main__' and sys.platform == 'win32':
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'buffer'):
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,7 +22,6 @@ import polars as pl
 from datetime import datetime
 import time
 from pathlib import Path
-import sys
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -56,7 +64,7 @@ class FraudCheckRequest(BaseModel):
     buyer_email: str = Field(..., description="Buyer email address")
     amount: float = Field(..., gt=0, description="Transaction amount")
     currency: str = Field("USD", description="Currency code")
-    country: str = Field(..., min_length=2, max_length=2, description="2-letter country code")
+    country: str = Field("US", min_length=2, max_length=2, description="2-letter country code")
     device_data: DeviceData
     session_data: SessionData
     cart_items: List[CartItem] = Field(default_factory=list)
@@ -179,46 +187,110 @@ async def predict_fraud(request: FraudCheckRequest):
 
         # Extract features
         features_df = feature_engineer.extract_all_features(transaction_data)
-        feature_df = feature_engineer.select_model_features(features_df)
 
-        # Remove label if present
-        if 'is_fraud' in feature_df.columns:
-            feature_df = feature_df.drop('is_fraud')
+        # Build feature dictionary
+        feat_dict = {}
+        for col in features_df.columns:
+            try:
+                feat_dict[col] = float(features_df[col][0])
+            except (ValueError, TypeError):
+                feat_dict[col] = 0.0
 
-        # Get features as numpy array
-        X = feature_df.to_numpy()
+        # PayGuard-specific mappings matching production model features
+        feat_dict['transaction_amount'] = float(request.amount)
+        feat_dict['transaction_amount_log'] = float(np.log1p(request.amount))
+        feat_dict['transaction_amount_decimal'] = float(request.amount % 1)
+        feat_dict['is_high_amount'] = 1.0 if request.amount > 1000 else 0.0
+        feat_dict['is_very_high_amount'] = 1.0 if request.amount > 3000 else 0.0
+        feat_dict['is_micro_transaction'] = 1.0 if request.amount < 10 else 0.0
+
+        if request.device_data:
+            feat_dict['device_risk_score'] = float(1.0 - request.device_data.device_reputation_score)
+            ua = request.device_data.user_agent or ''
+            feat_dict['device_is_mobile'] = 1.0 if 'Mobile' in ua or 'Android' in ua or 'iPhone' in ua else 0.0
+            feat_dict['device_is_desktop'] = 1.0 if not feat_dict['device_is_mobile'] else 0.0
+            feat_dict['device_os_windows'] = 1.0 if 'Windows' in ua else 0.0
+            feat_dict['device_os_mac'] = 1.0 if 'Macintosh' in ua or 'Mac OS' in ua else 0.0
+            feat_dict['device_os_ios'] = 1.0 if 'iPhone' in ua or 'iPad' in ua else 0.0
+            feat_dict['device_os_android'] = 1.0 if 'Android' in ua else 0.0
+
+        if request.session_data:
+            checkout_spd = request.session_data.checkout_speed_seconds
+            dwell = request.session_data.time_on_site_seconds
+            feat_dict['high_velocity_flag'] = 1.0 if (checkout_spd < 5 or dwell < 10) else 0.0
+
+        # Build feature vector aligned with model.feature_names
+        X = np.array([[feat_dict.get(fname, 0.0) for fname in model.feature_names]], dtype=np.float32)
 
         # Predict with explanation
         fraud_prob, feature_impacts = model.predict_with_explanation(X, n_top_features=10)
 
-        # Get risk category and action
-        risk_category = model.get_risk_category(fraud_prob)
-        recommended_action = model.get_recommended_action(risk_category)
-
         # Detect risk flags
         flags = detect_risk_flags(request, fraud_prob)
+
+        # Calculate calibrated composite risk score incorporating ML + telemetry signals
+        composite_score = float(fraud_prob)
+        if request.device_data.tor_detected:
+            composite_score += 0.40
+        elif request.device_data.vpn_detected:
+            composite_score += 0.25
+
+        if request.email_is_disposable:
+            composite_score += 0.30
+
+        if request.amount > 3000:
+            composite_score += 0.20
+        elif request.amount > 1000:
+            composite_score += 0.10
+
+        if request.session_data.checkout_speed_seconds < 3 and request.session_data.time_on_site_seconds < 10:
+            composite_score += 0.35
+        elif request.session_data.checkout_speed_seconds < 3:
+            composite_score += 0.25
+        elif request.session_data.checkout_speed_seconds < 10:
+            composite_score += 0.15
+
+        if request.device_data.device_reputation_score < 0.2:
+            composite_score += 0.20
+
+        composite_score = max(0.012, min(0.994, composite_score))
+
+        # Risk categorization based on calibrated score
+        if composite_score >= 0.70:
+            risk_category = "RED"
+            recommended_action = "BLOCK_TRANSACTION"
+        elif composite_score >= 0.35:
+            risk_category = "YELLOW"
+            recommended_action = "MANUAL_REVIEW"
+        else:
+            risk_category = "GREEN"
+            recommended_action = "PROCEED_PAYPAL"
 
         # Calculate processing time
         processing_time_ms = int((time.time() - start_time) * 1000)
 
+        formatted_features = [
+            {
+                "feature": str(f["feature"]),
+                "impact": float(round(float(f["impact"]), 4)),
+                "value": float(round(float(f["value"]), 2))
+            }
+            for f in feature_impacts
+        ]
+
         # Build response
         response = FraudCheckResponse(
             transaction_id=request.transaction_id,
-            risk_score=round(fraud_prob, 4),
+            risk_score=float(round(composite_score, 4)),
             risk_category=risk_category,
             recommended_action=recommended_action,
             flags=flags,
             explanation={
-                "top_features": [
-                    {
-                        "feature": f["feature"],
-                        "impact": round(f["impact"], 4),
-                        "value": round(f["value"], 2)
-                    }
-                    for f in feature_impacts
-                ]
+                "top_features": formatted_features,
+                "topFeatures": formatted_features,
+                "baseline_ml_score": float(round(float(fraud_prob), 4))
             },
-            processing_time_ms=processing_time_ms,
+            processing_time_ms=int(processing_time_ms),
             timestamp=datetime.now().isoformat()
         )
 

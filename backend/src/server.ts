@@ -107,7 +107,7 @@ async function registerRoutes(): Promise<void> {
     fastify.get('/ws', { websocket: true }, (connection, request) => {
       logger.info('WebSocket connection established')
 
-      connection.socket.on('message', (message) => {
+      connection.socket.on('message', (message: any) => {
         // Echo back for now - will be enhanced for real-time risk alerts
         connection.socket.send(JSON.stringify({
           type: 'echo',
@@ -120,8 +120,8 @@ async function registerRoutes(): Promise<void> {
         logger.info('WebSocket connection closed')
       })
 
-      connection.socket.on('error', (error) => {
-        logger.error('WebSocket error', { error: error.message })
+      connection.socket.on('error', (error: any) => {
+        logger.error('WebSocket error', { error: error?.message || error })
       })
 
       // Send welcome message
@@ -156,8 +156,8 @@ async function closeGracefully(signal: string): Promise<void> {
 
   try {
     await fastify.close()
-    await redis.quit()
-    await elastic.close()
+    try { await redis.quit() } catch {}
+    try { await elastic.close() } catch {}
     logger.info('✅ Server closed gracefully')
     process.exit(0)
   } catch (error) {
@@ -176,10 +176,14 @@ async function start(): Promise<void> {
     logger.info('🔍 Checking service connections...')
     await checkDatabaseConnection()
     await checkRedisConnection()
-    await checkElasticConnection()
+    const elasticOk = await checkElasticConnection()
 
-    // Initialize Elasticsearch indices
-    await initializeIndices()
+    // Initialize Elasticsearch indices if connected
+    if (elasticOk) {
+      await initializeIndices()
+    } else {
+      logger.warn('⚠️ Elasticsearch not connected - running with limited search capabilities')
+    }
 
     // Register plugins and routes
     await registerPlugins()
@@ -208,5 +212,20 @@ declare module 'fastify' {
   }
 }
 
-// Start the server
-start()
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+// Export fastify instance and setup functions for testing
+export { fastify, registerPlugins, registerRoutes, start }
+
+// Auto-start server when executed directly as main script
+const currentFilePath = fileURLToPath(import.meta.url)
+const executedFilePath = process.argv[1] ? path.resolve(process.argv[1]) : ''
+const isDirectExecution = executedFilePath && (
+  executedFilePath === currentFilePath ||
+  executedFilePath === currentFilePath.replace(/\.ts$/, '.js')
+)
+
+if (isDirectExecution && process.env.NODE_ENV !== 'test') {
+  start()
+}

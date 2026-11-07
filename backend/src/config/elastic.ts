@@ -4,8 +4,8 @@ const elasticNode = process.env.ELASTIC_NODE || 'http://localhost:9200'
 
 export const elastic = new Client({
   node: elasticNode,
-  maxRetries: 3,
-  requestTimeout: 30000,
+  maxRetries: 1,
+  requestTimeout: 3000,
   sniffOnStart: false
 })
 
@@ -14,8 +14,8 @@ export async function checkElasticConnection(): Promise<boolean> {
     const health = await elastic.cluster.health()
     console.log('✅ Elasticsearch connected - Status:', health.status)
     return true
-  } catch (error) {
-    console.error('❌ Elasticsearch connection failed:', error)
+  } catch (error: any) {
+    console.warn('⚠️ Elasticsearch connection failed:', error?.message || error)
     return false
   }
 }
@@ -76,53 +76,66 @@ export async function initializeIndices(): Promise<void> {
       })
       console.log('✅ Risk scores index created')
     }
-  } catch (error) {
-    console.error('❌ Failed to initialize Elasticsearch indices:', error)
-    throw error
+  } catch (error: any) {
+    console.warn('⚠️ Failed to initialize Elasticsearch indices (continuing):', error?.message || error)
   }
 }
 
 // Search helper functions
 export const search = {
   async indexTransaction(id: string, data: any): Promise<void> {
-    await elastic.index({
-      index: 'transactions',
-      id,
-      document: data
-    })
+    try {
+      await elastic.index({
+        index: 'transactions',
+        id,
+        document: data
+      })
+    } catch (error: any) {
+      // Non-critical background indexing
+    }
   },
 
   async searchTransactions(query: any): Promise<any> {
-    const result = await elastic.search({
-      index: 'transactions',
-      body: query
-    })
-    return result.hits.hits.map((hit: any) => ({
-      id: hit._id,
-      ...hit._source
-    }))
+    try {
+      const result = await elastic.search({
+        index: 'transactions',
+        body: query
+      })
+      return result.hits.hits.map((hit: any) => ({
+        id: hit._id,
+        ...hit._source
+      }))
+    } catch (error: any) {
+      console.warn('⚠️ Elasticsearch search failed:', error?.message || error)
+      return []
+    }
   },
 
   async aggregateRiskScores(merchantId: string, days: number = 30): Promise<any> {
-    const result = await elastic.search({
-      index: 'risk-scores',
-      body: {
-        query: {
-          bool: {
-            must: [
-              { term: { merchantId } },
-              { range: { createdAt: { gte: `now-${days}d` } } }
-            ]
-          }
-        },
-        aggs: {
-          avgRiskScore: { avg: { field: 'overallScore' } },
-          riskDistribution: {
-            terms: { field: 'flags' }
+    try {
+      const result = await elastic.search({
+        index: 'risk-scores',
+        body: {
+          query: {
+            bool: {
+              must: [
+                { term: { merchantId } },
+                { range: { createdAt: { gte: `now-${days}d` } } }
+              ]
+            }
+          },
+          aggs: {
+            avgRiskScore: { avg: { field: 'overallScore' } },
+            riskDistribution: {
+              terms: { field: 'flags' }
+            }
           }
         }
-      }
-    })
-    return result.aggregations
+      })
+      return result.aggregations
+    } catch (error: any) {
+      console.warn('⚠️ Elasticsearch aggregation failed:', error?.message || error)
+      return null
+    }
   }
 }
