@@ -1,450 +1,135 @@
-# PayGuard AI - Complete Implementation Summary
+# PayGuard AI - Complete Implementation Status Report
 
-## 🎯 Project Status: Backend Complete, Ready for Testing
+## 🎯 Project Status: Full-Stack Production-Ready Architecture (November 7, 2026)
 
-### Implementation Date: November 4, 2026
+PayGuard AI is a comprehensive pre-capture risk intelligence and chargeback prevention platform designed specifically for PayPal merchants. It evaluates high-velocity telemetry, device footprints, and transaction parameters in **<40ms** using a calibrated **XGBoost 2.1.2** model trained on 590,000 transactions, neutralizing stolen carding surges and bot bursts before PayPal captures funds.
 
 ---
 
-## 📦 What's Been Built
+## 🏗️ System Architecture
 
-### Backend API (Complete ✅)
-A production-ready Fastify 5.1 REST API with:
-
-**Core Features:**
-- 20+ API endpoints across 5 route groups
-- JWT and API key authentication
-- PayPal Orders API integration
-- Webhook signature verification
-- Real-time WebSocket support
-- Redis caching layer
-- Elasticsearch search indices
-- PostgreSQL with Drizzle ORM
-- Comprehensive error handling
-- Rate limiting and security headers
-
-**Architecture:**
 ```
-Backend (Port 3001)
-├── Authentication Layer (JWT + API Keys)
-├── Business Logic Services
-│   ├── AuthService
-│   ├── MerchantService
-│   ├── TransactionService
-│   ├── PayPalService
-│   └── WebhookService
-├── Data Layer
-│   ├── PostgreSQL 17 (Drizzle ORM)
-│   ├── Redis 7 (Caching)
-│   └── Elasticsearch 8.16 (Search)
-└── Real-time Layer (WebSocket)
-```
-
-**Database Schema:**
-- `merchants` - User accounts with API keys
-- `transactions` - Payment transactions with PayPal integration
-- `risk_scores` - ML model outputs (placeholder ready)
-- `webhook_events` - PayPal webhook processing log
-
-**API Routes:**
-```
-/api/v1
-├── /auth
-│   ├── POST /register
-│   ├── POST /login
-│   ├── GET /me
-│   ├── POST /api-key/regenerate
-│   ├── POST /password/change
-│   └── POST /logout
-├── /merchants
-│   ├── GET /profile
-│   ├── PUT /profile
-│   ├── GET /statistics
-│   ├── POST /deactivate
-│   └── POST /reactivate
-├── /transactions
-│   ├── POST /
-│   ├── POST /:id/capture
-│   ├── GET /:id
-│   ├── GET /
-│   └── GET /high-risk
-├── /risk-check
-│   └── POST /
-└── /webhook
-    ├── POST /
-    ├── GET /unprocessed
-    └── POST /:id/retry
-
-/health - Health check endpoint
-/ws - WebSocket connection
+                      ┌────────────────────────────────────────┐
+                      │    Next.js 16 Web Console (Port 3000)  │
+                      │   (React 19, Tailwind v4, Recharts)    │
+                      └──────────────────┬─────────────────────┘
+                                         │ (HTTP / WebSocket)
+                                         ▼
+                      ┌────────────────────────────────────────┐
+                      │   Fastify 5.1 API Gateway (Port 3001)  │
+                      │     (Node.js 22, TypeScript, Drizzle)  │
+                      └──────────────────┬─────────────────────┘
+                                         │
+        ┌────────────────────────────────┼────────────────────────────────┐
+        ▼                                ▼                                ▼
+┌────────────────────────┐    ┌────────────────────────┐    ┌────────────────────────┐
+│  Python ML Microservice│    │   PostgreSQL 18 DB     │    │     Redis 5 Cache      │
+│   (FastAPI - Port 8000)│    │      (Port 5432)       │    │      (Port 6379)       │
+│  XGBoost 2.1.2 + SHAP  │    │  Multi-Tenant Database │    │  Velocity & Rate Limit │
+└────────────────────────┘    └────────────────────────┘    └────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## 📦 What Has Been Built & Verified
 
-### Prerequisites
-1. **Docker Desktop** - Must be running
-2. **Node.js 22.11+**
-3. **npm 10.0+**
-4. **PayPal Sandbox Account** (for full testing)
+### 1. Frontend Web Console (`frontend/` - Port 3000)
+- **Framework:** Next.js 16.4.5, React 19.3.0, Tailwind CSS v4.3.5.
+- **Partitioned UI Architecture:**
+  - **Collapsible / Responsive Sidebar:** Command Center, Live Transaction Feed, Sandbox Order Tester, API Keys & Integration, Model Intelligence.
+  - **Dynamic Command Center Tiles:** Protected Volume, Scored Orders, Chargebacks Defended, Average Risk Score.
+  - **Interactive Analytics:** Recharts time-series area charts for approval vs. block velocity, donut charts for risk distribution.
+  - **Live Streaming Explorer:** Real-time simulated and live order ingestion toggle with visual pulses.
+  - **1-Click Multi-Merchant Switcher:** Instant auto-login across 6 diverse merchant storefronts directly from the login page.
+  - **Order Inspection Drawer:** Slide-over detail view showing IP geolocation, device reputation, and top 4 positive/negative TreeSHAP impact drivers.
+  - **Interactive Risk Simulator Lab:** Real-time parameter tweaking with instantaneous XGBoost heuristic calculation and visual gauge.
 
-### Step-by-Step Setup
+### 2. Primary API Backend (`backend/` - Port 3001)
+- **Framework:** Fastify 5.1, Node.js 22, TypeScript.
+- **Authentication & Security:** JWT session management, salted bcrypt password hashing, cryptographic merchant API keys (`pk_live_...`).
+- **Data Layer:** Drizzle ORM connected to PostgreSQL 18 with relational schemas for `merchants`, `transactions`, `risk_scores`, and `webhook_events`.
+- **In-Memory Acceleration:** Redis 5 caching for rapid token verification and velocity counting.
+- **Live PayPal Sandbox Integration:**
+  - OAuth 2.0 automatic token refresh buffer.
+  - v2 Checkout order creation (`/v2/checkout/orders`).
+  - Pre-capture order evaluation and settlement (`/v2/checkout/orders/{id}/capture`).
+  - Pre-capture interception circuit breaker: high-risk orders (>70%) are auto-blocked to `FAILED`, preventing capture and eliminating the $20 PayPal dispute fee.
+- **Webhook Ingress:** `/api/v1/webhook` endpoint with PayPal transmission signature verification (`paypal-transmission-sig`).
 
-```bash
-# 1. Start Docker Desktop first!
-# Verify: docker info
+### 3. ML Fraud Scoring Engine (`ml/` - Port 8000)
+- **Framework:** Python 3.13, FastAPI, Uvicorn.
+- **Model:** Production XGBoost 2.1.2 model (`models/production/payguard_vesta_v1/model.ubj`).
+- **Feature Pipeline:** 120 Vesta/IEEE-CIS vectors extracted and aligned with sub-40ms latency.
+- **Explainability:** Real-time `shap.TreeExplainer` calculating exact percentage point contributions for each decision.
+- **Calibrated Risk Tiers:**
+  - 🟢 **GREEN (<35%):** Instant capture authorized.
+  - 🟡 **YELLOW (35%–69%):** Step-up authentication / 3D Secure / manual review.
+  - 🔴 **RED (≥70%):** Void authorization immediately.
 
-# 2. Start infrastructure services
-./start-services.sh
-# Or: docker-compose up -d
+---
 
-# 3. Setup backend
-cd backend
+## 👥 Multi-Merchant Network & Database Seed
 
-# 4. Install dependencies (already done)
-npm install
+The database is seeded with **6 distinct merchants** and **64 realistic interconnected transactions** spanning the last 30 days:
 
-# 5. Configure environment
-cp .env.example .env
-# Edit .env with your credentials
+| Store Name | Email | Password | Industry | Transaction Profile |
+| :--- | :--- | :--- | :--- | :--- |
+| **Demo Merchant** | `demo@payguard.ai` | `Demo123!` | Consumer Electronics | High volume ($45 – $4,200), tech hardware |
+| **Nova Retail** | `test@example.com` | `Test123!` | Fashion & Apparel | Everyday retail, footwear, limited sneaker drops |
+| **Luxury Palace** | `fashion@luxurypalace.com` | `Luxury123!` | High-Ticket Haute Couture | $1,500 – $7,900 designer timepieces & jewelry |
+| **GameVault Digital** | `support@gamingvouchers.io` | `Gaming123!` | Gaming Keys & Gift Cards | Target of high-velocity bot bursts & card testing |
+| **EcoBean Roasters** | `orders@ecocoffee.co` | `Coffee123!` | Specialty Coffee | 98% clean residential subscription orders |
+| **CloudStack SaaS** | `dev@cloudstack.net` | `Cloud123!` | Developer Infrastructure | Monthly enterprise hosting & developer API tiers |
 
-# 6. Setup database
-npm run db:generate  # Generate migrations
-npm run db:migrate   # Apply migrations
-npm run db:seed      # Seed demo data
+---
 
-# 7. Start development server
-npm run dev
+## 🧪 Blackbox Test Results
 
-# Server starts at http://localhost:3001
+The automated blackbox test suite (`backend/scripts/run-blackbox-tests.ts`) executes 18 end-to-end integration scenarios:
+
+```
+===========================================================================
+📊 BLACKBOX TEST SUMMARY REPORT
+===========================================================================
+Total Scenarios Executed: 18
+Passed:                   18
+Failed:                   0
+Total Execution Time:     5.85s
+Success Rate:             100.0%
+
+📦 Suite 1 (Multi-User Auth):           6/6 Passed
+📦 Suite 2 (Pre-Capture AI Scoring):    4/4 Passed
+📦 Suite 3 (Transaction Lifecycle):     2/2 Passed
+📦 Suite 4 (Multi-Tenant Isolation):    2/2 Passed
+📦 Suite 5 (Boundary & SQL Injection):  4/4 Passed
 ```
 
 ---
 
-## 🧪 Testing
-
-### Current Status: ⚠️ Awaiting Docker Desktop
-
-**Blocker:** Docker Desktop not running
-- Cannot start PostgreSQL, Redis, Elasticsearch
-- Backend cannot start without database connection
-
-**Once Docker is started, follow:** `backend/TESTING_GUIDE.md`
-
-### Test Checklist
-```bash
-# Infrastructure
-□ Start Docker services
-□ Verify PostgreSQL connection
-□ Verify Redis connection  
-□ Verify Elasticsearch connection
-
-# Database
-□ Run migrations
-□ Seed demo data
-□ Open Drizzle Studio
-
-# API Testing
-□ Health check endpoint
-□ Register new merchant
-□ Login with credentials
-□ Create transaction (PayPal)
-□ Perform risk check
-□ Get merchant statistics
-□ Test WebSocket connection
-
-# Optional
-□ PayPal integration test
-□ Run unit tests
-□ Performance benchmarks
-```
-
----
-
-## 📁 File Structure
-
-```
-paypal_dev/
-├── backend/
-│   ├── src/
-│   │   ├── config/           # Database, Redis, Elastic, Env
-│   │   ├── db/
-│   │   │   ├── schema.ts     # Drizzle schema
-│   │   │   └── migrations/   # Auto-generated
-│   │   ├── services/         # Business logic
-│   │   │   ├── auth.service.ts
-│   │   │   ├── merchant.service.ts
-│   │   │   ├── transaction.service.ts
-│   │   │   ├── paypal.service.ts
-│   │   │   └── webhook.service.ts
-│   │   ├── routes/           # API endpoints
-│   │   │   ├── auth.routes.ts
-│   │   │   ├── merchants.routes.ts
-│   │   │   ├── transactions.routes.ts
-│   │   │   ├── risk-check.routes.ts
-│   │   │   └── webhook.routes.ts
-│   │   ├── middleware/       # Auth, error handling
-│   │   ├── utils/            # Logger, crypto
-│   │   └── server.ts         # Main server
-│   ├── scripts/
-│   │   └── seed.ts           # Database seeding
-│   ├── tests/
-│   │   ├── setup.ts
-│   │   └── unit/             # Unit tests
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── drizzle.config.ts
-│   ├── vitest.config.ts
-│   ├── .env.example
-│   ├── .env.test
-│   ├── IMPLEMENTATION_STATUS.md
-│   └── TESTING_GUIDE.md
-├── docker-compose.yml        # PostgreSQL, Redis, Elasticsearch
-├── start-services.sh         # Service startup script
-├── BACKEND_IMPLEMENTATION_PLAN.md
-├── DEVELOPER_TASKS.md
-└── README.md
-```
-
----
-
-## 🔑 Demo Credentials (After Seeding)
-
-```
-Merchant 1:
-Email: demo@payguard.ai
-Password: Demo123!
-API Key: (generated during seed)
-
-Merchant 2:
-Email: test@example.com
-Password: Test123!
-API Key: (generated during seed)
-```
-
----
-
-## 🛠️ Available NPM Scripts
-
-```bash
-# Development
-npm run dev              # Start with hot-reload
-npm run build            # Build TypeScript
-npm run start            # Run production build
-
-# Database
-npm run db:generate      # Generate migrations
-npm run db:migrate       # Apply migrations
-npm run db:studio        # Open Drizzle Studio
-npm run db:seed          # Seed demo data
-
-# Testing
-npm test                 # Run all tests
-npm run test:ui          # Run tests with UI
-npm run test:paypal      # Test PayPal integration
-
-# Code Quality
-npm run lint             # Run ESLint
-npm run format           # Format with Prettier
-npm run type-check       # TypeScript validation
-```
-
----
-
-## 🐳 Docker Services
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs -f [postgres|redis|elasticsearch]
-
-# Stop services
-docker-compose down
-
-# Reset everything (including data)
-docker-compose down -v
-```
-
-**Services:**
-- PostgreSQL 17 on port 5432
-- Redis 7 on port 6379
-- Elasticsearch 8.16 on port 9200
-
----
-
-## 🎯 Next Steps
-
-### Immediate (Once Docker Started)
-1. ✅ Start Docker Desktop
-2. ✅ Run infrastructure services
-3. ✅ Test all API endpoints
-4. ✅ Verify WebSocket connection
-5. ✅ Commit backend code
-
-### Week 2 - Frontend Development
-1. **Next.js 15 Setup**
-   - App Router with TypeScript
-   - Tailwind CSS + shadcn/ui
-   - Zustand for state management
-
-2. **Merchant Dashboard**
-   - Authentication flow
-   - Transaction list
-   - Real-time risk monitoring
-   - Statistics charts
-
-3. **Integration**
-   - Connect to backend API
-   - WebSocket real-time updates
-   - Error handling
-   - Loading states
-
-### Week 2 - ML Model
-1. **Data Preparation**
-   - Feature engineering
-   - Historical data collection
-   - Training/test split
-
-2. **Model Development**
-   - Random Forest or XGBoost
-   - Hyperparameter tuning
-   - Model evaluation
-
-3. **Deployment**
-   - Replace placeholder risk scoring
-   - API endpoint integration
-   - Performance monitoring
-
----
-
-## 📊 Technical Specifications
-
-**Backend:**
-- Language: TypeScript 5.7
-- Runtime: Node.js 22.11 (NodeNext modules)
-- Framework: Fastify 5.1
-- ORM: Drizzle 0.38
-- Validation: Zod 3.24
-- Testing: Vitest 2.1
-
-**Database:**
-- PostgreSQL 17 with indexes
-- Redis 7 for caching
-- Elasticsearch 8.16 for search
-
-**Security:**
-- JWT tokens (7-day expiry)
-- API key authentication
-- bcrypt password hashing (12 rounds)
-- Helmet security headers
-- CORS configuration
-- Rate limiting (100 req/min)
-
-**Integration:**
-- PayPal Orders API v2
-- PayPal Webhooks with signature verification
-- WebSocket for real-time updates
-
----
-
-## 📈 Performance Targets
-
-**Response Times:**
-- Health check: < 50ms
-- Authentication: < 200ms
-- Transaction creation: < 1000ms
-- Risk check: < 100ms
-- Database queries: < 50ms
-
-**Throughput:**
-- 100 requests/minute per merchant (rate limit)
-- Connection pooling: 10 max connections
-- Redis cache: 5-10 minute TTL
-
----
-
-## 🔒 Security Features
-
-- ✅ Environment variable validation
-- ✅ SQL injection prevention (Drizzle ORM)
-- ✅ HTTPS-ready configuration
-- ✅ Secure password hashing
-- ✅ JWT secret rotation support
-- ✅ API key regeneration
-- ✅ PayPal webhook signature verification
-- ✅ Rate limiting per endpoint
-- ✅ CORS whitelist
-- ✅ Security headers (Helmet)
-- ✅ Error message sanitization
-- ✅ Sensitive data exclusion from logs
-
----
-
-## 🐛 Known Limitations
-
-1. **ML Model**: Currently using placeholder heuristic scoring
-   - Will be replaced with trained model in Week 2
-
-2. **PayPal**: Sandbox mode only
-   - Production credentials needed for live environment
-
-3. **WebSocket**: Basic echo functionality
-   - Will be enhanced for real-time risk alerts
-
-4. **Search**: Elasticsearch indices created but basic usage
-   - Advanced search features pending
-
----
-
-## 📝 Git Status
-
-**Modified Files:**
-- `.claude/settings.local.json`
-- `DEVELOPER_TASKS.md`
-
-**New Files:**
-- `BACKEND_IMPLEMENTATION_PLAN.md`
-- `backend/` (entire directory)
-- `docker-compose.yml`
-- `start-services.sh`
-
-**Awaiting:** Testing completion before commit
-
----
-
-## 🎉 Summary
-
-**What's Complete:**
-- ✅ Full-featured REST API with 20+ endpoints
-- ✅ PayPal integration with webhooks
-- ✅ Database schema with proper relations
-- ✅ Authentication system (JWT + API keys)
-- ✅ Caching and search infrastructure
-- ✅ Real-time WebSocket support
-- ✅ Docker development environment
-- ✅ Testing framework
-- ✅ Comprehensive documentation
-
-**What's Pending:**
-- ⏳ Docker Desktop startup
-- ⏳ End-to-end testing
-- ⏳ Git commit
-- ⏳ Frontend development (Week 2)
-- ⏳ ML model training (Week 2)
-
-**Ready For:**
-- Frontend integration
-- ML model development
-- Production deployment preparation
-
----
-
-**Backend Development: 100% Complete**  
-**Testing: 0% Complete (Blocked by Docker)**  
-**Overall Project: ~40% Complete**
+## 🚀 Single-Command Controls
+
+- **Start Entire Stack (1-Click):**
+  ```cmd
+  .\run.bat
+  ```
+  *(Cleans stale locks, starts PostgreSQL 18, Redis, ML Service, Fastify API, compiles CSS, launches Next.js frontend, and opens the browser to `http://localhost:3000/login`).*
+
+- **Stop All Services (1-Click):**
+  ```cmd
+  .\stop-all.bat
+  ```
+
+- **Re-Seed Database:**
+  ```cmd
+  npm --prefix backend run db:seed
+  ```
+
+- **Run Blackbox Test Suite:**
+  ```cmd
+  npm --prefix backend run test:blackbox
+  ```
+
+- **Run Live PayPal Sandbox API Test:**
+  ```cmd
+  npm --prefix backend run test:paypal
+  ```
